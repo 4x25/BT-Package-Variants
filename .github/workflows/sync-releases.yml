@@ -1,5 +1,7 @@
 name: Sync upstream releases
 
+# Mirrors eligible upstream releases and persists only completed transactions.
+
 on:
   schedule:
     - cron: "17 * * * *"
