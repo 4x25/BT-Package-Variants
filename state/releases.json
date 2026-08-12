@@ -31,7 +31,36 @@
     305001478,
     302874444
   ],
-  "processed": {},
+  "processed": {
+    "v0.9.32": {
+      "fingerprint": "6c9e0a0e5ae5818ab94ee57ecae8556a3871672bad8c92b59c36cbe87af5aadd",
+      "outputs": {
+        "com.chinasoul.bt1.apk": {
+          "sha256": "461b070927109f895616c3f3f8fafcc309d745973f5405e9cb08c76762314a44",
+          "size": 3205276
+        },
+        "com.chinasoul.bt2.apk": {
+          "sha256": "3f8a3403ce618f7df61f6bacac0613dada672c19c437d0da8f13b8c2de96177c",
+          "size": 3205276
+        },
+        "com.chinasoul.bt3.apk": {
+          "sha256": "97a99f8329a42e93d5c62d3c2afbe231691a1ac0b98c2930d2a34e4667a7acb8",
+          "size": 3205276
+        },
+        "com.chinasoul.bt4.apk": {
+          "sha256": "c2754eee2a29a6d83d66a4eb81c6f1f3cc2da46731044a366f8c9c8fce526c7c",
+          "size": 3205276
+        },
+        "com.chinasoul.bt5.apk": {
+          "sha256": "663c1ff0383a9fac56d8712af4d8b7d93db679678b2c5f5b8e8645c781d712ab",
+          "size": 3205276
+        }
+      },
+      "source_asset_id": 500081852,
+      "source_release_id": 364229241,
+      "source_sha256": "d1c0a11299b7af94ad707789c869c5fd403331354480e4b4736c56a121a4e7f8"
+    }
+  },
   "schema": 1,
   "source_repository": "chinasoul/BT"
 }
