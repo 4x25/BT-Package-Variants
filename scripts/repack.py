@@ -301,8 +301,10 @@ def parse_badging(text: str) -> Badging:
     )
 
 
-def read_badging(aapt2: str, apk: Path) -> Badging:
-    return parse_badging(run_checked((aapt2, "dump", "badging", str(apk))))
+def read_badging(aapt: str, apk: Path) -> Badging:
+    # `aapt dump badging` is the stable badging interface. Some recent aapt2
+    # builds accept this command but omit sdkVersion/targetSdkVersion.
+    return parse_badging(run_checked((aapt, "dump", "badging", str(apk))))
 
 
 def component_snapshot(
@@ -800,6 +802,7 @@ def verify_signed_apk(
     apk: Path,
     expected: VariantExpectation,
     source: SourceModel,
+    aapt: str,
     aapt2: str,
     apksigner: str,
     zipalign: str,
@@ -810,7 +813,7 @@ def verify_signed_apk(
         raise RepackError(f"DEX bytes changed in {apk.name}")
     verify_alignment(zipalign, apk, modern_zipalign)
 
-    badging = read_badging(aapt2, apk)
+    badging = read_badging(aapt, apk)
     if badging.package != expected.package:
         raise RepackError(
             f"wrong output package in {apk.name}: {badging.package!r}"
@@ -930,6 +933,7 @@ def build_variants(args: argparse.Namespace) -> list[Path]:
     signing_env["KEY_PASSWORD"] = os.environ.get("KEY_PASSWORD") or password
 
     java = require_executable(args.java)
+    aapt = require_executable(args.aapt)
     aapt2 = require_executable(args.aapt2)
     apksigner = require_executable(args.apksigner)
     zipalign = require_executable(args.zipalign)
@@ -937,7 +941,7 @@ def build_variants(args: argparse.Namespace) -> list[Path]:
     modern_zipalign = zipalign_supports_page_size(zipalign)
 
     dex_digests = inspect_apk_zip(input_apk)
-    source_badging = read_badging(aapt2, input_apk)
+    source_badging = read_badging(aapt, input_apk)
     validate_package_name(source_badging.package, "source")
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1004,6 +1008,7 @@ def build_variants(args: argparse.Namespace) -> list[Path]:
                 apk=apk,
                 expected=expectation,
                 source=source,
+                aapt=aapt,
                 aapt2=aapt2,
                 apksigner=apksigner,
                 zipalign=zipalign,
@@ -1042,6 +1047,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--count", type=int, default=5, help="numbered variants")
     parser.add_argument("--java", default="java")
+    parser.add_argument("--aapt", default="aapt")
     parser.add_argument("--aapt2", default="aapt2")
     parser.add_argument("--apksigner", default="apksigner")
     parser.add_argument("--zipalign", default="zipalign")
