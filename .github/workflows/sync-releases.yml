@@ -41,8 +41,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          sdkmanager "build-tools;35.0.0"
-          echo "$ANDROID_HOME/build-tools/35.0.0" >> "$GITHUB_PATH"
+          SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKMANAGER"
+          "$SDKMANAGER" "build-tools;35.0.0"
+          echo "$ANDROID_SDK_ROOT/build-tools/35.0.0" >> "$GITHUB_PATH"
 
       - name: Download pinned APKEditor
         shell: bash
