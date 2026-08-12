@@ -1,0 +1,80 @@
+name: Sync upstream releases
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bt-release-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+
+      - name: Install Android build tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager "build-tools;35.0.0"
+          echo "$ANDROID_HOME/build-tools/35.0.0" >> "$GITHUB_PATH"
+
+      - name: Download pinned APKEditor
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tools
+          curl --fail --location --retry 4 --retry-all-errors \
+            --output tools/APKEditor-1.4.9.jar \
+            https://github.com/REAndroid/APKEditor/releases/download/V1.4.9/APKEditor-1.4.9.jar
+          echo "a9cd40df818845456be6d696de6110c89edf4b0a0580cb83438ed6b25a366e67  tools/APKEditor-1.4.9.jar" | sha256sum --check --strict
+
+      - name: Restore signing key
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SIGNING_KEYSTORE_BASE64"
+          printf '%s' "$SIGNING_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/signing.p12"
+          chmod 600 "$RUNNER_TEMP/signing.p12"
+
+      - name: Run unit tests
+        shell: bash
+        run: python -m unittest discover -s tests -v
+
+      - name: Synchronize all pending releases
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/sync_releases.py \
+            --state state/releases.json \
+            --work-dir "$RUNNER_TEMP/bt-sync" \
+            --apkeditor tools/APKEditor-1.4.9.jar \
+            --keystore "$RUNNER_TEMP/signing.p12"

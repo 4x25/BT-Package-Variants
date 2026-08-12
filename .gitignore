@@ -1,0 +1,34 @@
+# Generated Android packages and signatures
+*.apk
+*.apks
+*.aab
+*.idsig
+
+# Signing material and local secrets
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+*signing-key-password*
+.env
+.env.*
+!.env.example
+
+# Generated work directories and caches
+__pycache__/
+*.py[cod]
+build/
+dist/
+out/
+work/
+tmp/
+.cache/
+.tools/
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
